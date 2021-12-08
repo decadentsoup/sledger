@@ -44,3 +44,11 @@ Once you have your commands set, you can simply run `sledger --ledger path/to/ya
 The first time Sledger is run, it will create a database table in the public schema titled `sledger`. This table contains a copy of every ledger entry it has implemented in order, including rollback information (if provided).
 
 Sledger will first check integrity by going through the Sledger entries in the YAML and database and making sure they line up. If there are more entries in the YAML file, it will start executing those changes and updating the database's copy of the ledger. If there are more entries in the database, however, Sledger will start reverting changes in the reverse order they appear.
+
+## Can I use Docker?
+
+Yes! Here's an example:
+
+```sh
+docker run --rm -it --net=host -v "$PWD/myrepo":/ledger decadentsoup/sledger
+```
