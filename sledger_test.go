@@ -10,6 +10,7 @@ var (
 	MockOSGetenvParameters []map[string]string
 )
 
+// Test the case where there are no variable substitutions in the string
 func TestReplaceVariablesInStringNoReplacements(t *testing.T) {
 	sqlStatement := "REVOKE ALL ON SCHEMA public FROM PUBLIC"
 	result := ReplaceVariablesInString(sqlStatement)
@@ -18,6 +19,7 @@ func TestReplaceVariablesInStringNoReplacements(t *testing.T) {
 	}
 }
 
+// Test the case where there is one variable substitution in the string
 func TestReplaceVariablesInStringOneReplacement(t *testing.T) {
 	setupMocks()
 
@@ -39,6 +41,7 @@ func TestReplaceVariablesInStringOneReplacement(t *testing.T) {
 	}
 }
 
+// Test the case where there are multiple variable substitutions in the string
 func TestReplaceVariablesInStringTwoReplacements(t *testing.T) {
 	setupMocks()
 
@@ -62,6 +65,7 @@ func TestReplaceVariablesInStringTwoReplacements(t *testing.T) {
 	}
 }
 
+// Sets up and/or resets mocks
 func setupMocks() {
 	OSGetenv = mockOSGetenv
 	MockOSGetenvCounter = 0
@@ -69,6 +73,7 @@ func setupMocks() {
 	MockOSGetenvParameters = []map[string]string{}
 }
 
+// Mock function for os.Getenv
 func mockOSGetenv(key string) string {
 	MockOSGetenvCounter += 1
 

@@ -26,6 +26,7 @@ type (
 	}
 )
 
+// This is done for testing purposes
 var (
 	OSGetenv = os.Getenv
 )
@@ -146,6 +147,7 @@ func loadSledgerYaml(path string) sledger {
 	return sledger
 }
 
+// Replaces all variables in Forward and Backward sql statements of sledger.
 func replaceVariables(sledger *sledger) {
 	fmt.Println("\t...replacing env vars")
 
@@ -156,6 +158,9 @@ func replaceVariables(sledger *sledger) {
 	}
 }
 
+// This function takes a string and replaces all ${VARIABLES} with their corresponding environment variable value.
+// This function also does minimal checking (eg: if there is a '${' there must be a closing '}').  If there is no
+// environment variable set for a defined ${VARIABLE}, then a panic occurs.
 func ReplaceVariablesInString(in string) string {
 	index := strings.IndexAny(in, "${")
 	for index != -1 {
@@ -224,6 +229,8 @@ func sync(db *sql.DB, sledger sledger) {
 	}
 }
 
+// This function abbreviates an sql command down to it's first instruction (which is usually meaningful).  This is
+// primarily done to prevent leaking credentials to stdout.
 func AbbreviateSqlCommand(cmd string) string {
 	idx := strings.IndexAny(cmd, " ")
 	if idx > 0 {
