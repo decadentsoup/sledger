@@ -143,11 +143,6 @@ func loadSledgerYaml(path string) sledger {
 
 	replaceVariables(&sledger)
 
-	for _, value := range sledger.Sledger {
-		fmt.Printf("Forward = %v", value.Forward)
-		fmt.Printf("Backward = %v", value.Backward)
-	}
-
 	return sledger
 }
 
@@ -212,7 +207,7 @@ func sync(db *sql.DB, sledger sledger) {
 				os.Exit(1)
 			}
 
-			fmt.Printf("SKIP      %s\n", yamlForward)
+			fmt.Printf("SKIP      %s\n", AbbreviateSqlCommand(yamlForward))
 		}
 
 		index++
@@ -229,12 +224,21 @@ func sync(db *sql.DB, sledger sledger) {
 	}
 }
 
+func AbbreviateSqlCommand(cmd string) string {
+	idx := strings.IndexAny(cmd, " ")
+	if idx > 0 {
+		return cmd[:idx]
+	} else {
+		return cmd
+	}
+}
+
 func doRollback(db *sql.DB, index int, dbBackward string) {
 	if dbBackward == "" {
 		fmt.Println("ERROR     Missing rollback command, cannot rollback.")
 		os.Exit(1)
 	} else {
-		fmt.Printf("ROLLBACK  %s\n", dbBackward)
+		fmt.Printf("ROLLBACK  %s\n", AbbreviateSqlCommand(dbBackward))
 
 		tx, err := db.Begin()
 		if err != nil {
@@ -261,7 +265,7 @@ func doRollback(db *sql.DB, index int, dbBackward string) {
 }
 
 func doForward(db *sql.DB, index int, yamlForward string, yamlBackward string) {
-	fmt.Printf("FORWARD   %s\n", yamlForward)
+	fmt.Printf("FORWARD   %s\n", AbbreviateSqlCommand(yamlForward))
 
 	tx, err := db.Begin()
 	if err != nil {
