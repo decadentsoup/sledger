@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"gopkg.in/yaml.v2"
@@ -23,6 +24,10 @@ type (
 		index      int
 		dbBackward string
 	}
+)
+
+var (
+	OSGetenv = os.Getenv
 )
 
 const (
@@ -136,7 +141,47 @@ func loadSledgerYaml(path string) sledger {
 		panic(err)
 	}
 
+	replaceVariables(&sledger)
+
+	for _, value := range sledger.Sledger {
+		fmt.Printf("Forward = %v", value.Forward)
+		fmt.Printf("Backward = %v", value.Backward)
+	}
+
 	return sledger
+}
+
+func replaceVariables(sledger *sledger) {
+	fmt.Println("\t...replacing env vars")
+
+	// iterate over all the elements in the ledger
+	for idx, _ := range sledger.Sledger {
+		sledger.Sledger[idx].Forward = ReplaceVariablesInString(sledger.Sledger[idx].Forward)
+		sledger.Sledger[idx].Backward = ReplaceVariablesInString(sledger.Sledger[idx].Backward)
+	}
+}
+
+func ReplaceVariablesInString(in string) string {
+	index := strings.IndexAny(in, "${")
+	for index != -1 {
+		closeIndex := strings.IndexAny(in, "}")
+		if closeIndex == -1 {
+			panic("Found '${' without a terminating '}' in string: " + in)
+		}
+		variableName := in[index+2 : closeIndex]
+		envVarValue := OSGetenv(variableName)
+		if envVarValue == "" {
+			panic(fmt.Sprintf("Environment variable [%v] is not set!", variableName))
+		}
+
+		// calculate the return value
+		in = in[:index] + envVarValue + in[closeIndex+1:]
+
+		// while looper iteration to catch more than 1 variable in the string
+		index = strings.IndexAny(in, "${")
+	}
+
+	return in
 }
 
 func sync(db *sql.DB, sledger sledger) {
