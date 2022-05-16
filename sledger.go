@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"gopkg.in/yaml.v2"
@@ -23,6 +24,11 @@ type (
 		index      int
 		dbBackward string
 	}
+)
+
+// This is done for testing purposes
+var (
+	OSGetenv = os.Getenv
 )
 
 const (
@@ -136,7 +142,46 @@ func loadSledgerYaml(path string) sledger {
 		panic(err)
 	}
 
+	replaceVariables(&sledger)
+
 	return sledger
+}
+
+// Replaces all variables in Forward and Backward sql statements of sledger.
+func replaceVariables(sledger *sledger) {
+	fmt.Println("\t...replacing env vars")
+
+	// iterate over all the elements in the ledger
+	for idx, _ := range sledger.Sledger {
+		sledger.Sledger[idx].Forward = ReplaceVariablesInString(sledger.Sledger[idx].Forward)
+		sledger.Sledger[idx].Backward = ReplaceVariablesInString(sledger.Sledger[idx].Backward)
+	}
+}
+
+// This function takes a string and replaces all ${VARIABLES} with their corresponding environment variable value.
+// This function also does minimal checking (eg: if there is a '${' there must be a closing '}').  If there is no
+// environment variable set for a defined ${VARIABLE}, then a panic occurs.
+func ReplaceVariablesInString(in string) string {
+	index := strings.IndexAny(in, "${")
+	for index != -1 {
+		closeIndex := strings.IndexAny(in, "}")
+		if closeIndex == -1 {
+			panic("Found '${' without a terminating '}' in string: " + in)
+		}
+		variableName := in[index+2 : closeIndex]
+		envVarValue := OSGetenv(variableName)
+		if envVarValue == "" {
+			panic(fmt.Sprintf("Environment variable [%v] is not set!", variableName))
+		}
+
+		// calculate the return value
+		in = in[:index] + envVarValue + in[closeIndex+1:]
+
+		// while looper iteration to catch more than 1 variable in the string
+		index = strings.IndexAny(in, "${")
+	}
+
+	return in
 }
 
 func sync(db *sql.DB, sledger sledger) {
@@ -167,7 +212,7 @@ func sync(db *sql.DB, sledger sledger) {
 				os.Exit(1)
 			}
 
-			fmt.Printf("SKIP      %s\n", yamlForward)
+			fmt.Printf("SKIP      %s\n", AbbreviateSqlCommand(yamlForward))
 		}
 
 		index++
@@ -184,12 +229,23 @@ func sync(db *sql.DB, sledger sledger) {
 	}
 }
 
+// This function abbreviates an sql command down to it's first instruction (which is usually meaningful).  This is
+// primarily done to prevent leaking credentials to stdout.
+func AbbreviateSqlCommand(cmd string) string {
+	idx := strings.IndexAny(cmd, " ")
+	if idx > 0 {
+		return cmd[:idx]
+	} else {
+		return cmd
+	}
+}
+
 func doRollback(db *sql.DB, index int, dbBackward string) {
 	if dbBackward == "" {
 		fmt.Println("ERROR     Missing rollback command, cannot rollback.")
 		os.Exit(1)
 	} else {
-		fmt.Printf("ROLLBACK  %s\n", dbBackward)
+		fmt.Printf("ROLLBACK  %s\n", AbbreviateSqlCommand(dbBackward))
 
 		tx, err := db.Begin()
 		if err != nil {
@@ -216,7 +272,7 @@ func doRollback(db *sql.DB, index int, dbBackward string) {
 }
 
 func doForward(db *sql.DB, index int, yamlForward string, yamlBackward string) {
-	fmt.Printf("FORWARD   %s\n", yamlForward)
+	fmt.Printf("FORWARD   %s\n", AbbreviateSqlCommand(yamlForward))
 
 	tx, err := db.Begin()
 	if err != nil {
