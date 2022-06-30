@@ -1,0 +1,78 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: sledger-build-sensor
+  namespace: argocd
+  finalizers:
+    - sensor-controller
+spec:
+  template:
+    serviceAccountName: shared-svcs-1-argo-workflows-sa
+  dependencies:
+    - name: git-repo-dependencies
+      eventSourceName: github
+      eventName: motorefi
+      filters:
+        data:
+          - path: body.X-GitHub-Event
+            type: string
+            value:
+              - push
+          - path: body.repository
+            type: string
+            value:
+              - sledger
+          - path: body.ref
+            type: string
+            value:
+              - refs/heads/main
+          - path: body.after
+            type: string
+            comparator: "!="
+            value:
+              - "0000000000000000000000000000000000000000"
+  triggers:
+    - template:
+        name: build-template
+        conditions: git-repo-dependencies
+        argoWorkflow:
+          group: argoproj.io
+          version: v1alpha1
+          resource: Workflow
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: sledger-build-
+                namespace: argo-workflows
+              spec:
+                serviceAccountName: shared-svcs-1-argo-workflows-sa
+                workflowTemplateRef:
+                  name: generic-ci-image-build-workflow
+                arguments:
+                  parameters:
+                    - name: repo-name
+                      value: "sledger"
+                    - name: repo-revision
+                    - name: repo-url
+                    - name: dockerfile-location
+                      value: "Dockerfile"
+                    - name: destination
+                      value: "docker.motoinfra.com"
+                    - name: pr-context
+                      value: "image-build"
+          parameters:
+          - src:
+              dependencyName: git-repo-dependencies
+              dataKey: body.repository.name
+            dest: spec.arguments.parameters.0.value
+          - src:
+              dependencyName: git-repo-dependencies
+              dataKey: body.after
+            dest: spec.arguments.parameters.1.value
+          - src:
+              dependencyName: git-repo-dependencies
+              dataKey: body.repository.ssh_url
+            dest: spec.arguments.parameters.2.value
