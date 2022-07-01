@@ -1,0 +1,8 @@
+sledger:
+# 2021-09-21
+  - forward: CREATE SCHEMA IF NOT EXISTS creditreports;
+    backward: DROP SCHEMA IF EXISTS creditreports;
+
+# 2022-07-01 Reworked from roles.sh
+  - forward: CREATE ROLE credit_reports_write;
+    backward: DROP ROLE IF EXISTS credit_reports_write;

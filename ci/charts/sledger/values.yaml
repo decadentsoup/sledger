@@ -1,0 +1,45 @@
+# Default values for sledger.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: docker.motoinfra.com/sledger
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "tbd-image.tag"
+imagePullSecrets:
+  - name: nexus-repository-manager-docker-pull-secret
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  name: "tbd-serviceAccount.name"  # This needs to be set to the namespace service account where it will be executed
+
+gcpProjectId: "tbd-gcpProjectId"  # this needs to be set to the gcp project ID
+dbRegion: "us-east4"
+gcpSqlInstanceName: "tbd-gcpSqlInstanceName"  # this needs to be set to the gcp cloud sql instance name
+
+resources:  # TODO - this needs to be implemented in the chart
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+config:
+  DATABASE_PING_TIMEOUT: 900 # Seconds
+  DATABASE_MIGRATION_USERNAME: "tbd-DATABASE_MIGRATION_USERNAME"
+  DATABASE_NAME: "tbd-DATABASE_NAME"
+  DATABASE_HOST: "tbd-DATABASE_HOST"
+  DATABASE_PORT: "tbd-DATABASE_PORT"
+
+# sledgerFile: sledger.yaml  # this is required and needs to be set to the sledger.yaml file
+
+databaseMigrationPassword:
+  secretName: "tbd-databaseMigrationPassword.secretName"
+  key: "tbd-databaseMigrationPassword.key"
+
+# these extra secrets are pulled into the container running sledger as environment variables
+extraSecrets: []

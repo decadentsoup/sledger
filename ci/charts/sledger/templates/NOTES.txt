@@ -1,0 +1,1 @@
+Running sledger on the {{ .Values.config.DATABASE_NAME }} database in the {{ .Values.gcpSqlInstanceName }} cloud sql instance.

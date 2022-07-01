@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "sledger.fullname" . }}
+  labels:
+    {{- include "sledger.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 20
+  template:
+    spec:
+      restartPolicy: OnFailure
+      shareProcessNamespace: true
+      serviceAccountName: "{{ .Values.serviceAccount.name }}"
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: sledger-file
+          configMap:
+            name: {{ include "sledger.fullname" . }}-ledger
+      containers:
+      - name: sledger
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        envFrom:
+          - configMapRef:
+              name: {{ include "sledger.fullname" . }}
+          {{- range .Values.extraSecrets }}
+          - secretRef:
+              name: {{ .name }}
+          {{- end }}
+        env:
+          - name: DATABASE_MIGRATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.databaseMigrationPassword.secretName }}
+                key: {{ .Values.databaseMigrationPassword.key }}
+        volumeMounts:
+        - name: sledger-file
+          mountPath: /sledger.yaml
+          subPath: sledger.yaml  #references the key in the configmap
+      # GCP requires cloud-sql-proxy sidecar in order to access private db
+      # This makes the db instance available on localhost
+      - name: "postgres-proxy-sidecar"
+        image: gcr.io/cloudsql-docker/gce-proxy:1.31.0
+        command:
+        - "/cloud_sql_proxy"
+        - "-instances={{ .Values.gcpProjectId }}:{{ .Values.dbRegion }}:{{ .Values.gcpSqlInstanceName }}=tcp:{{ .Values.config.DATABASE_PORT }}"
+        securityContext:
+          runAsNonRoot: true

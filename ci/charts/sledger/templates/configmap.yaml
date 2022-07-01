@@ -1,0 +1,24 @@
+# Creates a configmap of environmental variables used by the Job
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sledger.fullname" . }}
+  labels:
+    {{- include "sledger.labels" . | nindent 4 }}
+{{- with .Values.config }}
+data:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+---
+{{- if .Values.sledgerFile }}
+# Creates a configmap of environmental variables used by the Job
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sledger.fullname" . }}-ledger
+  labels:
+    {{- include "sledger.labels" . | nindent 4 }}
+data:
+  sledger.yaml: |-
+{{ .Files.Get .Values.sledgerFile | indent 4 }}
+{{- end }}
