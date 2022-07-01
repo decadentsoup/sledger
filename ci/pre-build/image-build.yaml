@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: sledger-build-image-
+  namespace: argo-workflows
+spec:
+  serviceAccountName: shared-svcs-1-argo-workflows-sa
+  entrypoint: main
+  workflowTemplateRef:
+    name: generic-ci-image-build-workflow
+  arguments:
+    parameters:
+      - name: repo-name
+      - name: repo-url
+      - name: repo-revision
+      - name: repo-url
+        value: "git@github.com:motorefi/sledger.git"
+      - name: repo-revision
+      - name: dockerfile-location
+        value: "Dockerfile"
+      - name: destination
+        value: "docker.motoinfra.com"
+      - name: pr-context
+        value: "image-build"
