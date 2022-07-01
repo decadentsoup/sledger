@@ -43,7 +43,7 @@ spec:
               apiVersion: argoproj.io/v1alpha1
               kind: Workflow
               metadata:
-                generateName: apps-message-db-helm-release-build-
+                generateName: sledger-helm-release-build-
                 namespace: argo-workflows
               spec:
                 serviceAccountName: shared-svcs-1-argo-workflows-sa
