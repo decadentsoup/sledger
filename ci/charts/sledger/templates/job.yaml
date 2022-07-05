@@ -41,7 +41,7 @@ spec:
                 key: {{ .Values.databaseMigrationPassword.key }}
         volumeMounts:
         - name: sledger-file
-          mountPath: /sledger.yaml
+          mountPath: /ledger/sledger.yaml
           subPath: {{ .Values.sledgerFileConfigmap.key }}
       # GCP requires cloud-sql-proxy sidecar in order to access private db
       # This makes the db instance available on localhost

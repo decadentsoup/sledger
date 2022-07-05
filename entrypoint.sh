@@ -19,7 +19,7 @@ function run_sledger() {
    result=$?
    
    # after sledger runs, kill the proxy
-   if pgrep cloud_sql_proxy
+   if [ $(pgrep cloud_sql_proxy) ] && [ ${result} -eq 0 ]
    then
       pkill cloud_sql_proxy
    fi
