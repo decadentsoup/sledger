@@ -35,7 +35,9 @@ config:
   DATABASE_HOST: "tbd-DATABASE_HOST"
   DATABASE_PORT: "tbd-DATABASE_PORT"
 
-# sledgerFile: sledger.yaml  # this is required and needs to be set to the sledger.yaml file
+sledgerFileConfigmap:  # This needs to be overridden by the parent chart
+  name: sledgerFileConfigmap
+  key: sledger.yaml
 
 databaseMigrationPassword:
   secretName: "tbd-databaseMigrationPassword.secretName"

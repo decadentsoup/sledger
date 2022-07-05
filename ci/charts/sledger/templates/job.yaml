@@ -21,7 +21,7 @@ spec:
       volumes:
         - name: sledger-file
           configMap:
-            name: {{ include "sledger.fullname" . }}-ledger
+            name: {{ .Values.sledgerFileConfigmap.name }}
       containers:
       - name: sledger
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -42,7 +42,7 @@ spec:
         volumeMounts:
         - name: sledger-file
           mountPath: /sledger.yaml
-          subPath: sledger.yaml  #references the key in the configmap
+          subPath: {{ .Values.sledgerFileConfigmap.key }}
       # GCP requires cloud-sql-proxy sidecar in order to access private db
       # This makes the db instance available on localhost
       - name: "postgres-proxy-sidecar"
