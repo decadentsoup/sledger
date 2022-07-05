@@ -44,7 +44,6 @@ func main() {
 
 	fmt.Println("==> Parameters")
 	fmt.Println("  Ledger:", *path)
-	fmt.Println("Database:", *database)
 
 	fmt.Println("==> Setup")
 
