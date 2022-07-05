@@ -6,7 +6,7 @@ image:
   repository: docker.motoinfra.com/sledger
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "fcf33b4482bfa18c9e213418598ad02d060f7df4"
+  tag: "tbd"
 imagePullSecrets:
   - name: nexus-repository-manager-docker-pull-secret
 
