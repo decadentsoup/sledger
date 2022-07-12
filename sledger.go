@@ -37,18 +37,24 @@ const (
 
 func main() {
 	path := flag.String("ledger", "sledger.yaml", "path within git repository to sledger file")
-	database := flag.String("database", "postgresql://localhost", "URL of database to update")
+	var database string = *flag.String("database", "postgresql://localhost", "URL of database to update")
 	flag.Parse()
 
 	fmt.Println("==> Sledger")
 
 	fmt.Println("==> Parameters")
 	fmt.Println("  Ledger:", *path)
+	if isFlagPassed("database") {
+		fmt.Println("  Database: Data from flag used.")
+	} else {
+		database = getDbFromEnv()
+	}
 
 	fmt.Println("==> Setup")
 
 	fmt.Println("Connecting to database...")
-	db, err := sql.Open("postgres", *database)
+
+	db, err := sql.Open("postgres", database)
 	if err != nil {
 		panic(err)
 	}
@@ -294,4 +300,46 @@ func doForward(db *sql.DB, index int, yamlForward string, yamlBackward string) {
 	if err := tx.Commit(); err != nil {
 		panic(err)
 	}
+}
+
+func isFlagPassed(name string) bool {
+	found := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
+}
+
+func getDbFromEnv() string {
+	host := OSGetenv("DATABASE_HOST")
+	if len(host) < 1 {
+		fmt.Println("Host not specified. Default to localhost.")
+		host = "localhost"
+	}
+
+	port := OSGetenv("DATABASE_PORT")
+	if len(port) < 1 {
+		fmt.Println("Port not specified. Default to 5432.")
+		port = "5432"
+	}
+
+	dbName := OSGetenv("DATABASE_NAME")
+
+	dbUser := OSGetenv("DATABASE_MIGRATION_USERNAME")
+	if len(dbUser) < 1 {
+		fmt.Println("User not specified. Please provide one.")
+	}
+
+	dbUserPass := OSGetenv("DATABASE_MIGRATION_PASSWORD")
+
+	fmt.Println("  Database:")
+	fmt.Println("  - Host: ", host)
+	fmt.Println("  - Port: ", port)
+	fmt.Println("  - Name: ", dbName)
+	fmt.Println("  - User: ", dbUser)
+
+	dbEnv := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbUserPass, host, port, dbName)
+	return dbEnv
 }

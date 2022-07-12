@@ -15,7 +15,7 @@ function wait_for_db() {
 
 function run_sledger() {
    # run sledger and capture exit code to exit with later
-   /sledger --database "postgres://$DATABASE_MIGRATION_USERNAME:$DATABASE_MIGRATION_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?sslmode=disable"
+   /sledger
    result=$?
    
    # after sledger runs, kill the proxy
@@ -33,4 +33,3 @@ else
    wait_for_db
    run_sledger
 fi
-
