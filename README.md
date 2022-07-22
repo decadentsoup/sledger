@@ -1,5 +1,5 @@
 # Sledger
-
+ 
 ## What is Sledger?
 
 Sledger, short for "schema ledger", is a tool for managing database migrations. It is currently designed specifically for PostgreSQL but can be expanded to other databases in the future.
