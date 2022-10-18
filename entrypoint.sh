@@ -27,10 +27,19 @@ function run_sledger() {
    exit $result
 }
 
+function wait_for_istio() {
+   while ! curl -fsI http://localhost:15021/healthz/ready
+   do
+      echo "Waiting for Istio sidecar proxy..."
+      sleep 1
+   done
+}
+
 if [[ $# -gt 0 ]]; then
    exec $@
 else
    wait_for_db
+   wait_for_istio
    run_sledger
 fi
 
