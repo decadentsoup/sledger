@@ -10,9 +10,6 @@ metadata:
 spec:
   backoffLimit: 20
   template:
-    metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
     spec:
       restartPolicy: OnFailure
       shareProcessNamespace: true

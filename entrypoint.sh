@@ -33,3 +33,11 @@ else
    wait_for_db
    run_sledger
 fi
+
+# save off return code for later
+return_code=$?
+
+# kill command to terminate istio envoy proxy
+curl -XPOST http://localhost:15000/quitquitquit
+
+exit $return_code
