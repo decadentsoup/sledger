@@ -24,6 +24,9 @@ function run_sledger() {
       pkill cloud_sql_proxy
    fi
 
+   # kill command to terminate istio envoy proxy
+   curl -fsI -X POST http://localhost:15000/quitquitquit
+
    exit $result
 }
 
@@ -42,11 +45,3 @@ else
    wait_for_istio
    run_sledger
 fi
-
-# save off return code for later
-return_code=$?
-
-# kill command to terminate istio envoy proxy
-curl -XPOST http://localhost:15000/quitquitquit
-
-exit $return_code
