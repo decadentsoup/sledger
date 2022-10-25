@@ -1,5 +1,10 @@
 #!/bin/bash
 
+### ENVIRONMENT VARIABLES USED ###
+# ISTIO_ENABLED - when set to true, waits for the Istio sidecar proxy to be up
+#                 before running sledger
+##################################
+
 export PGPASSWORD=$DATABASE_MIGRATION_PASSWORD
 
 function wait_for_db() {
@@ -25,6 +30,7 @@ function run_sledger() {
    fi
 
    # kill command to terminate istio envoy proxy
+   # this may fail silently if the Istio sidecar proxy is not there
    curl -fsI -X POST http://localhost:15000/quitquitquit
 
    exit $result
@@ -42,6 +48,9 @@ if [[ $# -gt 0 ]]; then
    exec $@
 else
    wait_for_db
-   wait_for_istio
+   if [ "$ISTIO_ENABLED" = true ]
+   then
+      wait_for_istio
+   fi
    run_sledger
 fi
