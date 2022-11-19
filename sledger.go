@@ -121,7 +121,7 @@ func insertSledgerVersion(db *sql.DB) {
 
 func verifySledgerTable(db *sql.DB) {
 	fmt.Println("Creating sledger table if it does not exist...")
-	rows, err := db.Query("create table if not exists sledger (index bigint not null, forward text not null, backward text not null, timestamp timestamp not null default now())")
+	rows, err := db.Query("create table if not exists sledger (\"index\" bigint not null, forward text not null, backward text not null, timestamp timestamp not null default now())")
 	if err != nil {
 		panic(err)
 	}
@@ -185,7 +185,7 @@ func ReplaceVariablesInString(in string) string {
 }
 
 func sync(db *sql.DB, sledger sledger) {
-	rows, err := db.Query("select forward, backward from sledger order by index")
+	rows, err := db.Query("select forward, backward from sledger order by \"index\"")
 	if err != nil {
 		panic(err)
 	}
@@ -259,7 +259,7 @@ func doRollback(db *sql.DB, index int, dbBackward string) {
 		}
 		rows.Close()
 
-		rows, err = tx.Query("delete from sledger where index = $1", index)
+		rows, err = tx.Query("delete from sledger where \"index\" = $1", index)
 		if err != nil {
 			panic(err)
 		}
@@ -286,7 +286,7 @@ func doForward(db *sql.DB, index int, yamlForward string, yamlBackward string) {
 	}
 	rows.Close()
 
-	rows, err = db.Query("insert into sledger (index, forward, backward) values ($1, $2, $3)", index, yamlForward, yamlBackward)
+	rows, err = db.Query("insert into sledger (\"index\", forward, backward) values ($1, $2, $3)", index, yamlForward, yamlBackward)
 	if err != nil {
 		panic(err)
 	}
