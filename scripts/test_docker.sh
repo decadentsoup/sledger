@@ -43,7 +43,7 @@ step "Run sledger using our example ledger."
 docker run \
 	--rm \
 	--network sledger-test \
-	--mount type=bind,source="$PWD/example",destination=/ledger,readonly \
+	--mount type=bind,source="$PWD/example",destination=/migrations,readonly \
 	sledger:test \
 	--database "$database"
 

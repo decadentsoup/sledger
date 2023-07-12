@@ -74,6 +74,7 @@ ALTER TABLE public.sledger_version OWNER TO postgres;
 --
 
 COPY public.account (username, password) FROM stdin;
+system	sandwich
 \.
 
 
@@ -92,6 +93,7 @@ COPY public.post (title, body) FROM stdin;
 COPY public.sledger (index, forward, backward, "timestamp") FROM stdin;
 0	CREATE TABLE account (username TEXT NOT NULL, password TEXT NOT NULL);	DROP TABLE account;	(timestamp)
 1	CREATE TABLE post (title TEXT NOT NULL, body TEXT NOT NULL);	DROP TABLE post;	(timestamp)
+2	INSERT INTO account (username, password) VALUES ('system', 'sandwich')	DELETE FROM account WHERE username = 'system'	(timestamp)
 \.
 
 

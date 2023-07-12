@@ -10,5 +10,5 @@ RUN CGO_ENABLED=0 go build -o sledger
 
 FROM scratch
 COPY --from=build /app/sledger /sledger
-WORKDIR /ledger
+WORKDIR /
 ENTRYPOINT ["/sledger"]
