@@ -1,6 +1,6 @@
 module meganruggiero.com/sledger
 
-go 1.13
+go 1.20
 
 require (
 	github.com/lib/pq v1.10.4
