@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -131,7 +130,7 @@ func verifySledgerTable(db *sql.DB) {
 func loadSledgerYaml(path string) sledger {
 	fmt.Println("Loading sledger...")
 
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
@@ -152,7 +151,7 @@ func replaceVariables(sledger *sledger) {
 	fmt.Println("\t...replacing env vars")
 
 	// iterate over all the elements in the ledger
-	for idx, _ := range sledger.Sledger {
+	for idx := range sledger.Sledger {
 		sledger.Sledger[idx].Forward = ReplaceVariablesInString(sledger.Sledger[idx].Forward)
 		sledger.Sledger[idx].Backward = ReplaceVariablesInString(sledger.Sledger[idx].Backward)
 	}
