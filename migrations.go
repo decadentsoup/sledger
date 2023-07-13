@@ -20,7 +20,7 @@ type SQLChange struct {
 	Backward string
 }
 
-func RunMigrations(db *Database, root string) {
+func Migrate(driver Driver, root string) {
 	Step(StepLedger, root)
 	entries, err := os.ReadDir(root)
 	if err != nil {
@@ -36,16 +36,16 @@ func RunMigrations(db *Database, root string) {
 			var migration Migration
 			Step(StepRead, name)
 			ReadYAML(path, &migration)
-			migration.Run(db, name)
+			migration.Run(driver, name)
 		}
 	}
 }
 
-func (migration *Migration) Run(db *Database, name string) {
+func (migration *Migration) Run(driver Driver, name string) {
 	migration.verifyID(name)
 
 	for _, change := range migration.Changes {
-		change.Run(db)
+		change.Run(driver)
 	}
 }
 
@@ -58,6 +58,6 @@ func (migration *Migration) verifyID(name string) {
 	}
 }
 
-func (change *Change) Run(db *Database) {
-	db.Change(change.SQL.Forward, change.SQL.Backward)
+func (change *Change) Run(driver Driver) {
+	driver.Apply(change.SQL.Forward, change.SQL.Backward)
 }

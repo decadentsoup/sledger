@@ -7,12 +7,8 @@ func main() {
 	databaseURL := flag.String("database", "postgresql://localhost", "URL of database to update")
 	flag.Parse()
 
-	db := Connect(*databaseURL)
-	defer db.Close()
-
-	db.Setup()
-
-	RunMigrations(db, *ledgerRoot)
-
-	db.RunRollbacks()
+	driver := ConnectSQL(*databaseURL)
+	defer driver.Close()
+	Migrate(driver, *ledgerRoot)
+	driver.Rollback()
 }
