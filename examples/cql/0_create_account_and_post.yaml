@@ -1,0 +1,8 @@
+id: 0_create_account_and_post
+changes:
+  - cql:
+      forward: CREATE TABLE account (username text PRIMARY KEY, password text)
+      backward: DROP TABLE account
+  - cql:
+      forward: CREATE TABLE post (title text PRIMARY KEY, body text)
+      backward: DROP TABLE post

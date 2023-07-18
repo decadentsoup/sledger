@@ -1,0 +1,5 @@
+id: 1_insert_system_account
+changes:
+  - cql:
+      forward: INSERT INTO account (username, password) VALUES ('system', 'sandwich')
+      backward: DELETE FROM account WHERE username = 'system'

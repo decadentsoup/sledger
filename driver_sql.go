@@ -111,22 +111,26 @@ func (driver *SQLDriver) createRowCursor() {
 	driver.rows = rows
 }
 
-func (driver *SQLDriver) Apply(forward string, backward string) {
+func (driver *SQLDriver) Apply(change *Change) {
+	forward, backward := change.ToSQL()
+
 	if !driver.rows.Next() {
 		driver.doForward(forward, backward)
 		driver.index++
 		return
 	}
 
-	actualChange := driver.scan()
+	// TODO : migrate to new json-based data structure
+	storedChangeUnfixed := driver.scan()
+	storedChange := Change{SQL: &RawChange{Forward: storedChangeUnfixed.forward, Backward: storedChangeUnfixed.backward}}
 
-	if actualChange.index != driver.index {
-		Step(StepError, "Expected index %v, got index %v.", driver.index, actualChange.index)
+	if storedChangeUnfixed.index != driver.index {
+		Step(StepError, "Expected index %v, got index %v.", driver.index, storedChangeUnfixed.index)
 		os.Exit(1)
 	}
 
-	if actualChange.forward != forward {
-		Step(StepError, "Database does not match migration.\n Database: %v\nMigration: %v", actualChange.forward, forward)
+	if storedForward, _ := storedChange.ToSQL(); forward != storedForward {
+		Step(StepError, "Database does not match migration.\n Database: %v\nMigration: %v", storedForward, forward)
 		os.Exit(1)
 	}
 
@@ -172,7 +176,7 @@ func (driver *SQLDriver) Rollback() {
 			os.Exit(1)
 		}
 
-		Step(StepRollback, rollback.backward)
+		Step(StepRollback, "%v", rollback.backward)
 
 		tx, err := driver.db.Begin()
 		if err != nil {

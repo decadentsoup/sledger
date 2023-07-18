@@ -17,5 +17,6 @@ const (
 )
 
 func Step(category string, format string, args ...any) {
+	// TODO : redact url passwords in e.g. CONNECT step
 	fmt.Printf("\033[1m%*v\033[0m %v\n", MaxStepLength, category, fmt.Sprintf(format, args...))
 }

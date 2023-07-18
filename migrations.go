@@ -1,23 +1,25 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 type Migration struct {
-	ID      string
-	Changes []Change
+	ID      string   `json:"id"`
+	Changes []Change `json:"changes"`
 }
 
 type Change struct {
-	SQL *SQLChange
+	CQL *RawChange `json:"cql,omitempty"`
+	SQL *RawChange `json:"sql,omitempty"`
 }
 
-type SQLChange struct {
-	Forward  string
-	Backward string
+type RawChange struct {
+	Forward  string `json:"forward"`
+	Backward string `json:"backward,omitempty"`
 }
 
 func Migrate(driver Driver, root string) {
@@ -59,5 +61,34 @@ func (migration *Migration) verifyID(name string) {
 }
 
 func (change *Change) Run(driver Driver) {
-	driver.Apply(change.SQL.Forward, change.SQL.Backward)
+	driver.Apply(change)
+}
+
+func (change *Change) ToJSON() string {
+	result, err := json.Marshal(change)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(result)
+}
+
+func (change *Change) ToCQL() (string, string) {
+	if change.CQL != nil {
+		return change.CQL.Forward, change.CQL.Backward
+	}
+
+	Step(StepError, "%v not supported for cql", change)
+	os.Exit(1)
+	return "", "" // Needed by Go even though it should be unreachable.
+}
+
+func (change *Change) ToSQL() (string, string) {
+	if change.SQL != nil {
+		return change.SQL.Forward, change.SQL.Backward
+	}
+
+	Step(StepError, "%v not supported for sql", change)
+	os.Exit(1)
+	return "", "" // Needed by Go even though it should be unreachable.
 }

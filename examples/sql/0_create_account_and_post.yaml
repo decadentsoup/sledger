@@ -1,0 +1,8 @@
+id: 0_create_account_and_post
+changes:
+  - sql:
+      forward: CREATE TABLE account (username text NOT NULL, password text NOT NULL)
+      backward: DROP TABLE account
+  - sql:
+      forward: CREATE TABLE post (title text NOT NULL, body text NOT NULL)
+      backward: DROP TABLE post

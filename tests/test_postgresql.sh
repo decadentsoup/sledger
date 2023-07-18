@@ -1,20 +1,11 @@
 #!/bin/sh -e
-
-step() {
-	printf "\33[1m==> \33[35m$1\33[0m\n"
-}
+. "$(dirname "$0")/common.sh"
 
 clean() {
 	docker rm --force sledger-test-pg
 	docker volume rm --force sledger-test-pg
 	docker network rm --force sledger-test
 }
-
-step "Change directory to the root."
-cd "$(dirname "$0")/.."
-
-step "Build the program to a special test tag."
-docker build --tag sledger:test .
 
 step "Clean up previous, failed runs if any."
 clean
@@ -43,14 +34,14 @@ step "Run sledger using our example ledger."
 docker run \
 	--rm \
 	--network sledger-test \
-	--mount type=bind,source="$PWD/example",destination=/migrations,readonly \
+	--mount type=bind,source="$PWD/examples/sql",destination=/migrations,readonly \
 	sledger:test \
 	--database "$database"
 
 step "Verify the database dump matches expectations."
 docker exec sledger-test-pg pg_dump "$database" |
 	sed 's/[0-9][0-9]*-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\.[0-9][0-9]*/(timestamp)/g' |
-	diff example/pgdump.sql -
+	diff examples/sql/dump_postgresql.sql -
 
 step "Clean up after ourselves."
 clean
